@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:  # pragma: no cover - exercised by the Python 3.10 CI job
+    from enum import Enum
+
+    class StrEnum(str, Enum):
+        """Python 3.10 compatibility for enum.StrEnum's string behavior."""
+
+        def __str__(self) -> str:
+            return str(self.value)
 from typing import Any
 
 
@@ -48,4 +57,3 @@ class ValidationIssue:
         if result["detail"] is None:
             result.pop("detail")
         return result
-

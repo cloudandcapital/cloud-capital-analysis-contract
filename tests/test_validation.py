@@ -12,6 +12,11 @@ def codes(document):
     return {issue.code for issue in validate_document(document)}
 
 
+def test_error_codes_preserve_string_enum_behavior():
+    assert str(ErrorCode.SCHEMA_INVALID) == "SCHEMA_INVALID"
+    assert ErrorCode.SCHEMA_INVALID.value == "SCHEMA_INVALID"
+
+
 def test_valid_tool_result_passes(valid_tool_result):
     assert validate_document(valid_tool_result) == []
 
