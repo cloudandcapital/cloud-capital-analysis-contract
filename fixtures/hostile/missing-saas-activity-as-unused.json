@@ -1,0 +1,6 @@
+{
+  "purpose": "Must fail: absent activity evidence is classified as inactive.",
+  "seat": {"id": "seat.example", "activity_value": null, "activity_status": "inactive"},
+  "expected_error": "MISSING_ACTIVITY_MUST_BE_UNKNOWN"
+}
+

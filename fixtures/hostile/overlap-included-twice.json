@@ -1,0 +1,9 @@
+{
+  "purpose": "Must fail: two exclusive opportunities enter one additive aggregate.",
+  "opportunities": [
+    {"id": "opportunity.compute.rightsize", "group_id": "overlap.compute.one", "disposition": "exclusive", "expected": 200},
+    {"id": "opportunity.compute.commitment", "group_id": "overlap.compute.one", "disposition": "exclusive", "expected": 180}
+  ],
+  "aggregate": {"opportunity_ids": ["opportunity.compute.rightsize", "opportunity.compute.commitment"], "expected": 380},
+  "expected_error": "EXCLUSIVE_OVERLAP_INCLUDED_MORE_THAN_ONCE"
+}

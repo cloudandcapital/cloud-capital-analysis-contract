@@ -1,0 +1,9 @@
+{
+  "purpose": "Must fail: unsupported model price is recorded as zero cost.",
+  "model": "provider/new-model",
+  "price_book_match": null,
+  "cost": 0,
+  "cost_basis": "calculated",
+  "expected_error": "UNSUPPORTED_PRICE_MUST_BE_UNKNOWN"
+}
+

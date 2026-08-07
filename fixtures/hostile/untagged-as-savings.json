@@ -1,0 +1,7 @@
+{
+  "purpose": "Must fail: unattributed cost is treated as an opportunity amount.",
+  "metric": {"id": "metric.cloud.untagged_cost", "value": 125, "classification": "unattributed_cost"},
+  "opportunity": {"id": "opportunity.cloud.untagged", "expected": 125},
+  "expected_error": "UNATTRIBUTED_COST_IS_NOT_SAVINGS"
+}
+

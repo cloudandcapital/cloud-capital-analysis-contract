@@ -1,0 +1,9 @@
+{
+  "purpose": "Must fail: a modeled opportunity is labeled verified savings without a verified outcome.",
+  "opportunity_id": "opportunity.saas.reclaim",
+  "basis": "verified",
+  "amount": 241.42,
+  "evidence_ids": ["evidence.model.formula"],
+  "expected_error": "VERIFIED_REQUIRES_VERIFIED_OUTCOME_DOCUMENT"
+}
+

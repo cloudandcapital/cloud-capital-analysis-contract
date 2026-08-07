@@ -1,0 +1,13 @@
+{
+  "purpose": "Must fail: an unavailable upstream value was coerced to zero.",
+  "metric": {
+    "id": "metric.recovery.monthly_cost",
+    "name": "Recovery cost",
+    "value": 0,
+    "basis": "observed",
+    "quality_status": "valid",
+    "source_state": "parse_failed"
+  },
+  "expected_error": "PARSE_FAILURE_CANNOT_PRODUCE_VALID_ZERO"
+}
+

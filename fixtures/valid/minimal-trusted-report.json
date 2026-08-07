@@ -1,0 +1,120 @@
+{
+  "contract": "ccac/1.0.0",
+  "document_type": "trusted_report",
+  "producer": {"name": "tech-spend-command-center", "version": "1.0.0"},
+  "report_id": "report.demo.2026-07",
+  "run_id": "123e4567-e89b-12d3-a456-426614174000",
+  "generated_at": "2026-08-04T12:01:00Z",
+  "mode": "illustrative",
+  "status": "complete",
+  "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+  "included_producers": [
+    {"name": "finops-lite", "version": "1.0.0"},
+    {"name": "finops-watchdog", "version": "1.0.0"},
+    {"name": "recovery-economics", "version": "1.0.0"},
+    {"name": "ai-cost-lens", "version": "1.0.0"},
+    {"name": "saas-cost-analyzer", "version": "1.0.0"}
+  ],
+  "producer_quality": [
+    {"producer": {"name": "finops-lite", "version": "1.0.0"}, "quality": {"status": "valid", "issues": []}},
+    {"producer": {"name": "finops-watchdog", "version": "1.0.0"}, "quality": {"status": "valid", "issues": []}},
+    {"producer": {"name": "recovery-economics", "version": "1.0.0"}, "quality": {"status": "valid", "issues": []}},
+    {"producer": {"name": "ai-cost-lens", "version": "1.0.0"}, "quality": {"status": "valid", "issues": []}},
+    {"producer": {"name": "saas-cost-analyzer", "version": "1.0.0"}, "quality": {"status": "valid", "issues": []}}
+  ],
+  "omitted_producers": [],
+  "metric_catalog": [
+  {
+    "id": "metric.cloud.total",
+    "name": "Cloud spend",
+    "value": 1000.00,
+    "unknown_reason": null,
+    "unit": "currency",
+    "currency": "USD",
+    "basis": "observed",
+    "additivity": "additive",
+    "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+    "dimensions": {"scope": "cloud"},
+    "formula": null,
+    "input_metric_ids": [],
+    "evidence_ids": ["evidence.finops-lite.cloud-total"],
+    "quality_status": "valid"
+  },
+  {
+    "id": "metric.ai.total",
+    "name": "AI spend",
+    "value": 200.00,
+    "unknown_reason": null,
+    "unit": "currency",
+    "currency": "USD",
+    "basis": "observed",
+    "additivity": "additive",
+    "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+    "dimensions": {"scope": "ai"},
+    "formula": null,
+    "input_metric_ids": [],
+    "evidence_ids": ["evidence.ai-cost-lens.total"],
+    "quality_status": "valid"
+  },
+  {
+    "id": "metric.saas.total",
+    "name": "SaaS spend",
+    "value": 300.00,
+    "unknown_reason": null,
+    "unit": "currency",
+    "currency": "USD",
+    "basis": "observed",
+    "additivity": "additive",
+    "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+    "dimensions": {"scope": "saas"},
+    "formula": null,
+    "input_metric_ids": [],
+    "evidence_ids": ["evidence.saas-cost-analyzer.total"],
+    "quality_status": "valid"
+  },
+  {
+    "id": "metric.total.technology_spend",
+    "name": "Technology spend included in report",
+    "value": 1500.00,
+    "unknown_reason": null,
+    "unit": "currency",
+    "currency": "USD",
+    "basis": "calculated",
+    "additivity": "additive",
+    "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+    "dimensions": {"scope": "cloud_ai_saas"},
+    "formula": "cloud + ai + saas; excludes non-additive Kubernetes allocation and resilience scenario costs",
+    "input_metric_ids": ["metric.cloud.total", "metric.ai.total", "metric.saas.total"],
+    "evidence_ids": ["evidence.report.reconciliation"],
+    "quality_status": "valid"
+  }],
+  "finding_catalog": [],
+  "opportunity_catalog": [],
+  "opportunity_aggregates": [],
+  "display": {
+    "headline_metric_ids": ["metric.total.technology_spend"],
+    "section_metric_ids": {"overview": ["metric.total.technology_spend"]},
+    "finding_ids": [],
+    "opportunity_aggregate_ids": [],
+    "disclosures": ["Illustrative demo data; not customer billing data or verified savings."]
+  },
+  "reconciliation": [{
+    "id": "reconciliation.total.technology_spend",
+    "assertion": "Cloud, AI, and SaaS additive totals equal the displayed technology spend total.",
+    "input_metric_ids": ["metric.cloud.total", "metric.ai.total", "metric.saas.total"],
+    "output_metric_id": "metric.total.technology_spend",
+    "difference": 0.00,
+    "tolerance": 0.01,
+    "status": "passed"
+  }],
+  "provenance": {
+    "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "artifact_sha256s": {
+      "finops-lite": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "finops-watchdog": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "recovery-economics": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "ai-cost-lens": "1111111111111111111111111111111111111111111111111111111111111111",
+      "saas-cost-analyzer": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  }
+}
