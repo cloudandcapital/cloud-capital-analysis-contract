@@ -17,10 +17,11 @@ wheels = [
 
 [[package]]
 name = "cloudandcapital-ccac"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
+    { name = "referencing" },
 ]
 
 [package.optional-dependencies]
@@ -32,6 +33,7 @@ dev = [
 requires-dist = [
     { name = "jsonschema", specifier = ">=4.23,<5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0,<9" },
+    { name = "referencing", specifier = ">=0.28" },
 ]
 provides-extras = ["dev"]
 

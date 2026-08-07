@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter, defaultdict
+from decimal import Decimal, InvalidOperation
 from typing import Any, Iterable
 
 from .errors import ErrorCode, ValidationIssue
@@ -18,6 +19,30 @@ REQUIRED_ANALYTICAL_PRODUCERS = {
     "ai-cost-lens",
     "saas-cost-analyzer",
 }
+SCOPE_OWNERS = {
+    "cloud": "finops-lite",
+    "direct_ai": "ai-cost-lens",
+    "saas": "saas-cost-analyzer",
+}
+SCOPE_CHANNELS = {
+    "cloud": "cloud_provider_billing",
+    "direct_ai": "direct_ai_vendor",
+    "saas": "saas_invoice_or_entitlement",
+}
+
+
+def _period_signature(period: dict[str, Any]) -> tuple[Any, Any, Any]:
+    return (period.get("start"), period.get("end"), period.get("timezone", "UTC"))
+
+
+def _decimal(value: Any) -> Decimal | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        result = Decimal(str(value))
+    except InvalidOperation:
+        return None
+    return result if result.is_finite() else None
 
 
 def _issue(code: ErrorCode, message: str, path: str, detail: Any | None = None) -> ValidationIssue:
@@ -53,12 +78,52 @@ def _validate_metrics(metrics: list[dict[str, Any]], evidence_ids: set[str], iss
         basis = metric.get("basis")
         if value is None and (basis != "unknown" or not metric.get("unknown_reason")):
             issues.append(_issue(ErrorCode.UNKNOWN_VALUE_REQUIRED, "Null metric requires basis=unknown and unknown_reason", path))
-        if basis in {"calculated", "allocated", "estimated"} and not metric.get("formula"):
+        if basis in {"calculated", "allocated", "modeled", "estimated", "forecast"} and not metric.get("formula"):
             issues.append(_issue(ErrorCode.FORMULA_REQUIRED, f"{basis} metric requires a formula", path))
         if basis == "verified":
             issues.append(_issue(ErrorCode.VERIFIED_REQUIRES_VERIFIED_OUTCOME_DOCUMENT, "Verified values are allowed only in verified_outcome documents", path))
         _check_refs(metric.get("evidence_ids", []), evidence_ids, f"{path}.evidence_ids", issues)
         _check_refs(metric.get("input_metric_ids", []), metric_ids, f"{path}.input_metric_ids", issues)
+
+
+def _validate_boundary(metric: dict[str, Any], path: str, issues: list[ValidationIssue], producer: str | None = None) -> None:
+    boundary = metric.get("accounting_boundary")
+    if not isinstance(boundary, dict):
+        return
+    scope = boundary.get("scope")
+    owner = SCOPE_OWNERS.get(scope)
+    if owner is None or boundary.get("canonical_owner") != owner or (producer is not None and producer != owner):
+        issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_OWNER_INVALID, f"Canonical scope {scope!r} must be owned by {owner!r}", f"{path}.accounting_boundary.canonical_owner"))
+    if boundary.get("source_channel") != SCOPE_CHANNELS.get(scope):
+        issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_POLICY_INVALID, f"Canonical scope {scope!r} has the wrong billing channel", f"{path}.accounting_boundary.source_channel"))
+    cross = boundary.get("cross_scope_treatments", {})
+    policy_ok = (
+        scope == "cloud" and cross.get("provider_billed_ai") == "included" and cross.get("direct_ai_vendor") == "excluded"
+    ) or (
+        scope == "direct_ai" and cross.get("provider_billed_ai") == "excluded" and cross.get("direct_ai_vendor") == "included"
+    ) or (
+        scope == "saas" and cross.get("provider_billed_ai") in {"excluded", "not_applicable"} and cross.get("direct_ai_vendor") == "excluded"
+    )
+    if not policy_ok:
+        issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_POLICY_INVALID, f"Canonical scope {scope!r} violates the cross-scope billing policy", f"{path}.accounting_boundary.cross_scope_treatments"))
+    relationship = boundary.get("relationship")
+    if relationship != "canonical_scope_spend" and boundary.get("total_eligible"):
+        issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_INELIGIBLE, "Allocations and components cannot enter the all-in total", f"{path}.accounting_boundary.total_eligible"))
+    if boundary.get("total_eligible"):
+        eligible = (
+            relationship == "canonical_scope_spend"
+            and metric.get("value") is not None
+            and metric.get("unit") == "currency"
+            and metric.get("currency") is not None
+            and metric.get("additivity") == "additive"
+            and metric.get("basis") in {"observed", "calculated"}
+            and metric.get("quality_status") == "valid"
+            and boundary.get("coverage") == "complete"
+            and boundary.get("overlap", {}).get("disposition") in {"resolved", "excluded"}
+            and bool(metric.get("evidence_ids"))
+        )
+        if not eligible:
+            issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_INELIGIBLE, f"Canonical scope {scope!r} does not satisfy all-in total eligibility", f"{path}.accounting_boundary"))
 
 
 def validate_tool_result(document: dict[str, Any]) -> list[ValidationIssue]:
@@ -75,6 +140,13 @@ def validate_tool_result(document: dict[str, Any]) -> list[ValidationIssue]:
     for index, item in enumerate(evidence.values()):
         _check_refs(item.get("source_ids", []), source_ids, f"$.evidence[{index}].source_ids", issues)
     _validate_metrics(list(metrics.values()), set(evidence), issues)
+    if document.get("contract") == "ccac/1.1.0":
+        for index, metric in enumerate(metrics.values()):
+            _validate_boundary(metric, f"$.metrics[{index}]", issues, document.get("producer", {}).get("name"))
+            if metric.get("metric_role") == "technology_spend_total":
+                issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "Producer tool results cannot publish a technology-spend total", f"$.metrics[{index}].metric_role"))
+            if isinstance(metric.get("accounting_boundary"), dict) and _period_signature(metric.get("period", {})) != _period_signature(document.get("period", {})):
+                issues.append(_issue(ErrorCode.CANONICAL_SCOPE_MISMATCH, "Boundary metric period must match the tool-result period", f"$.metrics[{index}].period"))
 
     for index, finding in enumerate(findings.values()):
         _check_refs(finding.get("metric_ids", []), set(metrics), f"$.findings[{index}].metric_ids", issues)
@@ -172,12 +244,95 @@ def validate_trusted_report(document: dict[str, Any]) -> list[ValidationIssue]:
     for index, reconciliation in enumerate(document.get("reconciliation", [])):
         _check_refs(reconciliation.get("input_metric_ids", []), set(metrics), f"$.reconciliation[{index}].input_metric_ids", issues)
         _check_refs([reconciliation.get("output_metric_id")], set(metrics), f"$.reconciliation[{index}].output_metric_id", issues)
-        if reconciliation.get("status") != "passed" or abs(reconciliation.get("difference", 0)) > reconciliation.get("tolerance", 0):
+        if reconciliation.get("reconciliation_type") != "technology_spend_total" and (reconciliation.get("status") != "passed" or abs(reconciliation.get("difference", 0)) > reconciliation.get("tolerance", 0)):
             issues.append(_issue(ErrorCode.RECONCILIATION_FAILED, "Trusted report contains a failed reconciliation", f"$.reconciliation[{index}]"))
         input_metrics = [metrics.get(item) for item in reconciliation.get("input_metric_ids", [])]
         if any(item and item.get("additivity") == "non_additive" for item in input_metrics):
             issues.append(_issue(ErrorCode.NON_ADDITIVE_METRIC_INCLUDED_IN_TOTAL, "Reconciliation includes a non-additive metric", f"$.reconciliation[{index}].input_metric_ids"))
+    if document.get("contract") == "ccac/1.1.0":
+        _validate_technology_spend(document, metrics, issues)
     return issues
+
+
+def _validate_technology_spend(document: dict[str, Any], metrics: dict[str, dict[str, Any]], issues: list[ValidationIssue]) -> None:
+    boundary_metrics = [metric for metric in metrics.values() if isinstance(metric.get("accounting_boundary"), dict)]
+    for index, metric in enumerate(boundary_metrics):
+        _validate_boundary(metric, f"$.metric_catalog[{index}]", issues)
+        if metric.get("metric_role") == "technology_spend_total":
+            issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "A canonical scope metric cannot also be a technology-spend total", f"$.metric_catalog[{index}]"))
+    canonical = [metric for metric in boundary_metrics if metric["accounting_boundary"].get("relationship") == "canonical_scope_spend"]
+    scopes = [metric["accounting_boundary"].get("scope") for metric in canonical]
+    for duplicate in sorted(_duplicates(scopes)):
+        issues.append(_issue(ErrorCode.CANONICAL_SCOPE_DUPLICATE, f"Duplicate canonical scope {duplicate!r}", "$.metric_catalog"))
+
+    typed = [item for item in document.get("reconciliation", []) if item.get("reconciliation_type") == "technology_spend_total"]
+    display = document.get("display", {})
+    displayed = set(display.get("headline_metric_ids", []))
+    for refs in display.get("section_metric_ids", {}).values():
+        displayed.update(refs)
+    all_in_ids = {metric["id"] for metric in metrics.values() if metric.get("metric_role") == "technology_spend_total"}
+    advertised = displayed & all_in_ids
+    if advertised and len(typed) != 1:
+        issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "An advertised technology-spend total requires exactly one typed reconciliation", "$.reconciliation"))
+    if document.get("status") == "partial" and advertised:
+        issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "A partial report cannot advertise an all-in technology-spend total", "$.display"))
+    if len(typed) != 1:
+        return
+    reconciliation = typed[0]
+
+    input_ids = reconciliation.get("input_metric_ids", [])
+    inputs = [metrics.get(metric_id) for metric_id in input_ids]
+    if any(metric is None for metric in inputs):
+        issues.append(_issue(ErrorCode.DANGLING_REFERENCE, "Technology-spend input does not resolve", "$.reconciliation.input_metric_ids"))
+        return
+    input_scopes = [metric.get("accounting_boundary", {}).get("scope") for metric in inputs if metric]
+    if set(input_scopes) != set(SCOPE_OWNERS) or len(input_scopes) != 3:
+        issues.append(_issue(ErrorCode.CANONICAL_SCOPE_MISSING, "Technology spend requires exactly one cloud, direct_ai, and saas metric", "$.reconciliation.input_metric_ids"))
+    if len(input_scopes) != len(set(input_scopes)):
+        issues.append(_issue(ErrorCode.CANONICAL_SCOPE_DUPLICATE, "Technology-spend inputs contain a duplicate scope", "$.reconciliation.input_metric_ids"))
+    if any(not metric.get("accounting_boundary", {}).get("total_eligible") for metric in inputs if metric):
+        issues.append(_issue(ErrorCode.ACCOUNTING_BOUNDARY_INELIGIBLE, "Technology-spend reconciliation includes an ineligible scope", "$.reconciliation.input_metric_ids"))
+    signatures = {(_period_signature(metric.get("period", {})), metric.get("currency"), metric.get("accounting_boundary", {}).get("cost_basis"), metric.get("accounting_boundary", {}).get("currency_minor_unit")) for metric in inputs if metric}
+    if len(signatures) != 1:
+        issues.append(_issue(ErrorCode.CANONICAL_SCOPE_MISMATCH, "Technology-spend inputs must have identical periods, currency, cost basis, and minor unit", "$.reconciliation.input_metric_ids"))
+    if any(_period_signature(metric.get("period", {})) != _period_signature(document.get("period", {})) for metric in inputs if metric):
+        issues.append(_issue(ErrorCode.CANONICAL_SCOPE_MISMATCH, "Technology-spend inputs must match the trusted-report period", "$.reconciliation.input_metric_ids"))
+    output = metrics.get(reconciliation.get("output_metric_id"))
+    if output is None:
+        issues.append(_issue(ErrorCode.DANGLING_REFERENCE, "Technology-spend output does not resolve", "$.reconciliation.output_metric_id"))
+        return
+    input_currency = inputs[0].get("currency") if inputs else None
+    output_valid = (
+        output.get("metric_role") == "technology_spend_total"
+        and "accounting_boundary" not in output
+        and output.get("unit") == "currency"
+        and output.get("currency") == input_currency
+        and _period_signature(output.get("period", {})) == _period_signature(document.get("period", {}))
+        and output.get("additivity") == "additive"
+        and output.get("basis") == "calculated"
+        and output.get("quality_status") == "valid"
+        and _decimal(output.get("value")) is not None
+        and set(output.get("input_metric_ids", [])) == set(input_ids)
+        and len(output.get("input_metric_ids", [])) == 3
+        and bool(output.get("formula"))
+        and bool(output.get("evidence_ids"))
+    )
+    if not output_valid:
+        issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "Technology-spend output does not satisfy the complete total contract", "$.reconciliation.output_metric_id"))
+    values = [_decimal(metric.get("value")) for metric in inputs if metric]
+    output_value = _decimal(output.get("value"))
+    declared_difference = _decimal(reconciliation.get("difference"))
+    tolerance = _decimal(reconciliation.get("tolerance"))
+    minor_units = {_decimal(metric.get("accounting_boundary", {}).get("currency_minor_unit")) for metric in inputs if metric}
+    if None in minor_units or len(minor_units) != 1 or tolerance is None or tolerance < 0 or tolerance > next(iter(minor_units)):
+        issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "Tolerance must be nonnegative and no larger than the common currency minor unit", "$.reconciliation.tolerance"))
+        return
+    if all(value is not None for value in values) and output_value is not None and declared_difference is not None:
+        difference = output_value - sum(values, Decimal("0"))
+        if reconciliation.get("status") != "passed" or abs(difference) > tolerance or declared_difference != difference:
+            issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "Technology-spend total does not reconcile within tolerance", "$.reconciliation"))
+    else:
+        issues.append(_issue(ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID, "Technology-spend reconciliation values must be finite JSON numbers", "$.reconciliation"))
 
 
 def validate_verified_outcome(document: dict[str, Any]) -> list[ValidationIssue]:

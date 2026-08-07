@@ -1,0 +1,105 @@
+{
+  "contract": "ccac/1.1.0",
+  "document_type": "tool_result",
+  "producer": {
+    "name": "saas-cost-analyzer",
+    "version": "0.0.0"
+  },
+  "run_id": "11111111-1111-4111-8111-111111111111",
+  "generated_at": "2026-08-02T00:00:00Z",
+  "mode": "illustrative",
+  "period": {
+    "start": "2026-07-01",
+    "end": "2026-08-01",
+    "timezone": "UTC"
+  },
+  "inputs": [
+    {
+      "id": "source.saas.billing",
+      "source_type": "saas_invoice_or_entitlement",
+      "source_version": "illustrative-1",
+      "adapter_version": null,
+      "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "access": "illustrative_fixture",
+      "data_classification": "public_illustrative",
+      "lossy_mapping": false,
+      "mapping_notes": []
+    }
+  ],
+  "quality": {
+    "status": "valid",
+    "issues": []
+  },
+  "metrics": [
+    {
+      "id": "metric.tech-spend.scope.saas",
+      "name": "Canonical saas scope spend",
+      "value": 300.0,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "observed",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": [
+        "evidence.saas.invoice"
+      ],
+      "quality_status": "valid",
+      "accounting_boundary": {
+        "relationship": "canonical_scope_spend",
+        "scope": "saas",
+        "canonical_owner": "saas-cost-analyzer",
+        "source_channel": "saas_invoice_or_entitlement",
+        "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
+        "inclusion_rules": [
+          "Include saas charges from the declared billing channel."
+        ],
+        "exclusion_rules": [
+          "Exclude charges classified to another canonical technology-spend scope."
+        ],
+        "coverage": "complete",
+        "overlap": {
+          "disposition": "resolved",
+          "treatment": "Billing-channel classification is explicit."
+        },
+        "cross_scope_treatments": {
+          "provider_billed_ai": "not_applicable",
+          "direct_ai_vendor": "excluded"
+        },
+        "component_treatments": {
+          "credits": "included",
+          "taxes": "excluded",
+          "adjustments": "included",
+          "shared_services": "included"
+        },
+        "allocation_of_metric_id": null,
+        "total_eligible": true,
+        "eligibility_reason": "Eligible after complete boundary validation."
+      }
+    }
+  ],
+  "findings": [],
+  "opportunities": [],
+  "evidence": [
+    {
+      "id": "evidence.saas.invoice",
+      "kind": "invoice",
+      "source_ids": [
+        "source.saas.billing"
+      ],
+      "description": "Illustrative saas billing evidence.",
+      "locator": null,
+      "observed_at": "2026-08-02T00:00:00Z",
+      "content_sha256": null
+    }
+  ],
+  "extensions": {}
+}
