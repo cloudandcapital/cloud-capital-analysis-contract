@@ -1,0 +1,7 @@
+{
+  "purpose": "Must fail: public opportunity includes a mutating cloud command.",
+  "mode": "illustrative",
+  "review_steps": ["aws ec2 terminate-instances --instance-ids i-example"],
+  "expected_error": "MUTATING_COMMAND_NOT_ALLOWED"
+}
+

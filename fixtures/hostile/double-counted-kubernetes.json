@@ -1,0 +1,10 @@
+{
+  "purpose": "Must fail: Kubernetes is an allocated view of cloud spend and is added again.",
+  "input_metrics": [
+    {"id": "metric.cloud.total", "value": 1000, "additivity": "additive"},
+    {"id": "metric.kubernetes.allocated_cost", "value": 400, "additivity": "non_additive"}
+  ],
+  "reported_total": 1400,
+  "expected_error": "NON_ADDITIVE_METRIC_INCLUDED_IN_TOTAL"
+}
+

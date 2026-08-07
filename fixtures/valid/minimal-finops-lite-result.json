@@ -1,0 +1,79 @@
+{
+  "contract": "ccac/1.0.0",
+  "document_type": "tool_result",
+  "producer": {"name": "finops-lite", "version": "1.0.0"},
+  "run_id": "123e4567-e89b-12d3-a456-426614174000",
+  "generated_at": "2026-08-04T12:00:00Z",
+  "mode": "illustrative",
+  "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+  "inputs": [{
+    "id": "source.focus.aws",
+    "source_type": "aws_focus",
+    "source_version": "1.2",
+    "adapter_version": "1.0.0",
+    "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "access": "illustrative_fixture",
+    "data_classification": "public_illustrative",
+    "lossy_mapping": false,
+    "mapping_notes": []
+  }],
+  "quality": {"status": "valid", "issues": []},
+  "metrics": [
+    {
+      "id": "metric.cloud.aws.effective_cost",
+      "name": "AWS effective cost",
+      "value": 1000.00,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "observed",
+      "additivity": "additive",
+      "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+      "dimensions": {"provider": "aws"},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": ["evidence.aws.focus.total"],
+      "quality_status": "valid"
+    },
+    {
+      "id": "metric.cloud.untagged_cost",
+      "name": "Unattributed cost from missing allocation tags",
+      "value": 125.00,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "calculated",
+      "additivity": "non_additive",
+      "period": {"start": "2026-07-01", "end": "2026-07-31", "timezone": "UTC"},
+      "dimensions": {"classification": "unattributed_cost", "savings_eligible": false},
+      "formula": "sum(EffectiveCost where required allocation dimension is absent)",
+      "input_metric_ids": ["metric.cloud.aws.effective_cost"],
+      "evidence_ids": ["evidence.aws.focus.total"],
+      "quality_status": "valid"
+    }
+  ],
+  "findings": [{
+    "id": "finding.cloud.allocation.untagged",
+    "finding_type": "allocation",
+    "title": "Cloud cost remains unattributed",
+    "description": "This is an allocation issue, not a savings claim.",
+    "severity": "medium",
+    "status": "open",
+    "metric_ids": ["metric.cloud.untagged_cost"],
+    "evidence_ids": ["evidence.aws.focus.total"],
+    "first_observed_at": "2026-08-04T12:00:00Z",
+    "last_observed_at": "2026-08-04T12:00:00Z"
+  }],
+  "opportunities": [],
+  "evidence": [{
+    "id": "evidence.aws.focus.total",
+    "kind": "source_query",
+    "source_ids": ["source.focus.aws"],
+    "description": "Reconciled effective cost from the illustrative AWS FOCUS fixture.",
+    "locator": "rows:all",
+    "observed_at": "2026-08-04T12:00:00Z",
+    "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }],
+  "extensions": {"focus": {"source_specification": "1.2"}}
+}
+
