@@ -1,5 +1,15 @@
 # Calculation Ownership
 
+## Canonical technology-spend scopes
+
+| Scope | Producer owner | Billing channel | Required exclusion |
+|---|---|---|---|
+| Cloud | FinOps Lite | Cloud-provider billing | Direct AI-vendor invoices |
+| Direct AI | AI Cost Lens | Direct AI-vendor usage or invoices | Provider-billed native AI |
+| SaaS | SaaS Cost Analyzer | SaaS invoices or entitlements | Vendors classified as direct AI |
+
+Tech Spend Command Center may reconcile and publish the combined total but may not originate or reinterpret the three amounts. FinOps Watchdog and Recovery Economics may not originate canonical scope totals. Kubernetes is an allocation of Cloud and remains non-additive at this boundary.
+
 ## Ownership rule
 
 The canonical owner is the only component allowed to originate that calculation. Consumers may filter, group, display, or reconcile owned metrics but may not recompute them with different formulas. A derived report metric is allowed only when its formula is declared and references canonical input metric IDs.

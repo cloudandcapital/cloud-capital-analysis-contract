@@ -31,7 +31,7 @@ jobs:
           from pathlib import Path
           from jsonschema import Draft202012Validator
 
-          for path in sorted(Path("schemas").glob("*.json")):
+          for path in sorted(Path("schemas").rglob("*.json")):
               Draft202012Validator.check_schema(json.loads(path.read_text()))
           for path in sorted(Path("fixtures").rglob("*.json")):
               json.loads(path.read_text())
@@ -42,3 +42,15 @@ jobs:
         run: python -m pip install --force-reinstall dist/*.whl
       - if: matrix.python-version == '3.12'
         run: ccac validate fixtures/valid/minimal-finops-lite-result.json
+      - if: matrix.python-version == '3.12'
+        run: ccac validate fixtures/valid/1.1.0/technology-spend-report.json
+      - if: matrix.python-version == '3.12'
+        name: Verify packaged schemas
+        run: |
+          python - <<'PY'
+          from importlib.resources import files
+
+          schemas = files("ccac.schemas")
+          assert schemas.joinpath("common.schema.json").is_file()
+          assert schemas.joinpath("1.1.0", "common.schema.json").is_file()
+          PY

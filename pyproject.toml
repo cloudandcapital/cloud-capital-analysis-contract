@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cloudandcapital-ccac"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cloud & Capital Analysis Contract schemas and conformance validator"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [{name = "Cloud & Capital"}]
-dependencies = ["jsonschema>=4.23,<5"]
+dependencies = ["jsonschema>=4.23,<5", "referencing>=0.28"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0,<9"]
@@ -27,4 +27,3 @@ packages = ["src/ccac"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
-

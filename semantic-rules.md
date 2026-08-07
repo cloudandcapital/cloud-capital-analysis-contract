@@ -1,5 +1,17 @@
 # Semantic Rules Beyond JSON Schema
 
+## Versioned accounting-boundary rules (`ccac/1.1.0`)
+
+1. FinOps Lite owns `cloud`, AI Cost Lens owns `direct_ai`, and SaaS Cost Analyzer owns `saas`.
+2. Provider-billed native AI is Cloud; direct vendor AI excludes it; SaaS excludes direct-AI vendors.
+3. Existing period, timezone, currency, evidence, quality, formula inputs, and additivity remain authoritative.
+4. Credits, taxes, adjustments, and shared services require explicit treatment.
+5. Allocations and components are not additional scope spend. Kubernetes is a Cloud allocation.
+6. Total eligibility requires a non-null additive currency value, observed or calculated basis, complete coverage, valid quality, evidence, and resolved overlap.
+7. A total references exactly one eligible metric per scope with identical boundary signatures and reconciles within tolerance.
+8. Partial reports may display individual scopes but cannot advertise an all-in total.
+9. Unknown compatibility fails closed; automatic FX conversion and inference from labels are forbidden.
+
 JSON Schema validates shape. The conformance library must also enforce reference integrity and financial semantics.
 
 ## Identity and reference rules
@@ -46,4 +58,3 @@ JSON Schema validates shape. The conformance library must also enforce reference
 - A partial report explicitly lists omissions and does not present an all-in total unless its label names the included scopes.
 - Illustrative disclosure is visible and machine-readable.
 - All reconciliation entries pass before status can be `complete`.
-

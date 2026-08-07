@@ -1,0 +1,113 @@
+{
+  "contract": "ccac/1.1.0",
+  "document_type": "tool_result",
+  "producer": {
+    "name": "ai-cost-lens",
+    "version": "0.0.0"
+  },
+  "run_id": "11111111-1111-4111-8111-111111111111",
+  "generated_at": "2026-08-02T00:00:00Z",
+  "mode": "illustrative",
+  "period": {
+    "start": "2026-07-01",
+    "end": "2026-08-01",
+    "timezone": "UTC"
+  },
+  "inputs": [
+    {
+      "id": "source.direct_ai.billing",
+      "source_type": "direct_ai_vendor",
+      "source_version": "illustrative-1",
+      "adapter_version": null,
+      "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "access": "illustrative_fixture",
+      "data_classification": "public_illustrative",
+      "lossy_mapping": false,
+      "mapping_notes": []
+    }
+  ],
+  "quality": {
+    "status": "partial",
+    "issues": [
+      {
+        "code": "quality.coverage.partial",
+        "severity": "warning",
+        "message": "Direct AI billing coverage is incomplete.",
+        "source_id": "source.direct_ai.billing",
+        "field": null,
+        "row_count": null
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "id": "metric.tech-spend.scope.direct_ai",
+      "name": "Canonical direct_ai scope spend",
+      "value": null,
+      "unknown_reason": "Direct AI billing coverage is incomplete.",
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "unknown",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": [
+        "evidence.direct_ai.invoice"
+      ],
+      "quality_status": "partial",
+      "accounting_boundary": {
+        "relationship": "canonical_scope_spend",
+        "scope": "direct_ai",
+        "canonical_owner": "ai-cost-lens",
+        "source_channel": "direct_ai_vendor",
+        "cost_basis": "net_cost",
+        "inclusion_rules": [
+          "Include direct_ai charges from the declared billing channel."
+        ],
+        "exclusion_rules": [
+          "Exclude charges classified to another canonical technology-spend scope."
+        ],
+        "coverage": "partial",
+        "overlap": {
+          "disposition": "unresolved",
+          "treatment": "Billing-channel classification is explicit."
+        },
+        "cross_scope_treatments": {
+          "provider_billed_ai": "excluded",
+          "direct_ai_vendor": "included"
+        },
+        "component_treatments": {
+          "credits": "included",
+          "taxes": "excluded",
+          "adjustments": "included",
+          "shared_services": "included"
+        },
+        "allocation_of_metric_id": null,
+        "total_eligible": false,
+        "eligibility_reason": "Incomplete coverage is not total-eligible."
+      }
+    }
+  ],
+  "findings": [],
+  "opportunities": [],
+  "evidence": [
+    {
+      "id": "evidence.direct_ai.invoice",
+      "kind": "invoice",
+      "source_ids": [
+        "source.direct_ai.billing"
+      ],
+      "description": "Illustrative direct_ai billing evidence.",
+      "locator": null,
+      "observed_at": "2026-08-02T00:00:00Z",
+      "content_sha256": null
+    }
+  ],
+  "extensions": {}
+}

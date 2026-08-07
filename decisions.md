@@ -1,5 +1,11 @@
 # Phase 0 Decisions
 
+## ADR: accounting boundaries are `ccac/1.1.0`
+
+Accounting-boundary semantics are an opt-in minor contract version, not an undocumented reinterpretation of `ccac/1.0.0`. Validator dispatch uses the declared contract and a distinct packaged schema set; unsupported versions fail closed. Existing 1.0 artifacts retain their original schemas and behavior.
+
+Billing-channel classification makes provider-billed native AI `cloud`, direct vendor AI `direct_ai`, and SaaS exclusive of direct-AI vendors. A combined total is valid only after the three producer-owned values pass eligibility and reconciliation. This decision introduces no producer calculation or dashboard integration.
+
 ## Frozen for implementation
 
 1. The public contract name is `CCAC`, Cloud & Capital Analysis Contract.

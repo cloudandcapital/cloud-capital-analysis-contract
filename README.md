@@ -2,7 +2,21 @@
 
 CCAC is the versioned data contract and independent reference validator between Cloud & Capital analytical producers and trusted consumers. It defines artifact structure, identity, lineage, quality, additivity, overlap, reconciliation, and estimate-versus-outcome rules. It is not a billing connector or cost-calculation engine.
 
-The current contract identity is `ccac/1.0.0`. The reference Python package is `cloudandcapital-ccac` 0.1.0 and uses JSON Schema 2020-12.
+The reference package is `cloudandcapital-ccac` 0.2.0 and uses JSON Schema 2020-12. It dispatches explicitly between preserved `ccac/1.0.0` behavior and the accounting-boundary-capable `ccac/1.1.0`; unsupported versions fail closed.
+
+## Accounting boundaries in 1.1
+
+CCAC 1.1 classifies three mutually exclusive technology-spend scopes by billing channel:
+
+- `cloud`, owned by FinOps Lite, includes native AI services billed by AWS, Azure, or GCP and excludes direct AI-vendor billing.
+- `direct_ai`, owned by AI Cost Lens, includes direct AI-vendor usage or invoices and excludes provider-billed AI.
+- `saas`, owned by SaaS Cost Analyzer, includes SaaS invoices or entitlements and excludes vendors classified as direct AI.
+
+A scope metric declares owner, source channel, cost basis, inclusion and exclusion rules, coverage, overlap disposition, component treatments, total eligibility, and reason. Existing metric period, currency, additivity, evidence, formula inputs, and quality remain authoritative. Allocations and components may describe a scope but cannot be added as new spend.
+
+An all-in total requires exactly one eligible metric per scope, identical periods/timezones, currency, and cost basis, plus typed reconciliation within an explicit tolerance denominated in that currency and bounded by its minor-unit convention. Partial, unknown, invalid, non-additive, modeled, estimated, forecast, unresolved, or evidence-free inputs fail closed. Partial reports may show scopes individually but cannot advertise an all-in total. Automatic FX conversion is out of scope.
+
+This capability enables a future scope breakdown and donut. It does not connect Cloud Cost Guard and is not a claim of GAAP compliance, audited accounting, official FOCUS conformance, or complete enterprise billing coverage.
 
 ## Current pipeline compatibility
 
@@ -65,9 +79,9 @@ Core rules include fail-closed missing values, explicit basis and additivity, ev
 
 ## Versioning
 
-The contract string (currently `ccac/1.0.0`) versions artifact semantics. Breaking schema or semantic changes require a new contract major version and explicit version selection or migration behavior. Additive changes are versioned honestly and cannot silently reinterpret existing `ccac/1.0.0` documents. Python package versions describe validator releases and are separate from the contract identity.
+The contract string versions artifact semantics. `ccac/1.0.0` remains supported without reinterpretation; `ccac/1.1.0` adds opt-in accounting-boundary fields and rules. Breaking changes require a new major version and explicit selection or migration. Python package versions describe validator releases and remain separate from contract identity.
 
-This initial repository bootstrap preserves the audited `ccac/1.0.0` reference behavior. New accounting-boundary semantics will be proposed and reviewed separately; they are not part of this bootstrap.
+The 1.1 capability is contract infrastructure only. Producers do not emit these scope metrics yet.
 
 ## Repository map
 

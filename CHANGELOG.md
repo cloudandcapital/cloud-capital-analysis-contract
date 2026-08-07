@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 — unreleased
+
+- Add explicit dispatch for preserved `ccac/1.0.0` and new `ccac/1.1.0` artifacts.
+- Add typed Cloud, direct-AI, and SaaS boundaries and fail-closed technology-spend reconciliation.
+- Keep producer calculations and released 1.0 pipeline artifacts unchanged.
+
 ## 0.1.0 — 2026-08-04
 
 - Add CCAC 1.0.0 draft schemas for tool results, pipeline manifests, trusted reports, and verified outcomes.

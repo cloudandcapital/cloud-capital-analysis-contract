@@ -1,0 +1,339 @@
+{
+  "contract": "ccac/1.1.0",
+  "document_type": "trusted_report",
+  "producer": {
+    "name": "tech-spend-command-center",
+    "version": "0.2.0"
+  },
+  "report_id": "report.demo.2026-07",
+  "run_id": "11111111-1111-4111-8111-111111111111",
+  "generated_at": "2026-08-04T12:01:00Z",
+  "mode": "illustrative",
+  "status": "complete",
+  "period": {
+    "start": "2026-07-01",
+    "end": "2026-08-01",
+    "timezone": "UTC"
+  },
+  "included_producers": [
+    {
+      "name": "finops-lite",
+      "version": "1.0.0"
+    },
+    {
+      "name": "finops-watchdog",
+      "version": "1.0.0"
+    },
+    {
+      "name": "recovery-economics",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ai-cost-lens",
+      "version": "1.0.0"
+    },
+    {
+      "name": "saas-cost-analyzer",
+      "version": "1.0.0"
+    }
+  ],
+  "producer_quality": [
+    {
+      "producer": {
+        "name": "finops-lite",
+        "version": "1.0.0"
+      },
+      "quality": {
+        "status": "valid",
+        "issues": []
+      }
+    },
+    {
+      "producer": {
+        "name": "finops-watchdog",
+        "version": "1.0.0"
+      },
+      "quality": {
+        "status": "valid",
+        "issues": []
+      }
+    },
+    {
+      "producer": {
+        "name": "recovery-economics",
+        "version": "1.0.0"
+      },
+      "quality": {
+        "status": "valid",
+        "issues": []
+      }
+    },
+    {
+      "producer": {
+        "name": "ai-cost-lens",
+        "version": "1.0.0"
+      },
+      "quality": {
+        "status": "valid",
+        "issues": []
+      }
+    },
+    {
+      "producer": {
+        "name": "saas-cost-analyzer",
+        "version": "1.0.0"
+      },
+      "quality": {
+        "status": "valid",
+        "issues": []
+      }
+    }
+  ],
+  "omitted_producers": [],
+  "metric_catalog": [
+    {
+      "id": "metric.tech-spend.scope.cloud",
+      "name": "Canonical cloud scope spend",
+      "value": 1000.0,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "observed",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": [
+        "evidence.cloud.invoice"
+      ],
+      "quality_status": "valid",
+      "accounting_boundary": {
+        "relationship": "canonical_scope_spend",
+        "scope": "cloud",
+        "canonical_owner": "finops-lite",
+        "source_channel": "cloud_provider_billing",
+        "cost_basis": "net_cost",
+        "inclusion_rules": [
+          "Include cloud charges from the declared billing channel."
+        ],
+        "exclusion_rules": [
+          "Exclude charges classified to another canonical technology-spend scope."
+        ],
+        "coverage": "complete",
+        "overlap": {
+          "disposition": "resolved",
+          "treatment": "Billing-channel classification is explicit."
+        },
+        "cross_scope_treatments": {
+          "provider_billed_ai": "included",
+          "direct_ai_vendor": "excluded"
+        },
+        "component_treatments": {
+          "credits": "included",
+          "taxes": "excluded",
+          "adjustments": "included",
+          "shared_services": "included"
+        },
+        "allocation_of_metric_id": null,
+        "total_eligible": true,
+        "eligibility_reason": "Eligible after complete boundary validation."
+      }
+    },
+    {
+      "id": "metric.tech-spend.scope.direct_ai",
+      "name": "Canonical direct_ai scope spend",
+      "value": 200.0,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "observed",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": [
+        "evidence.direct_ai.invoice"
+      ],
+      "quality_status": "valid",
+      "accounting_boundary": {
+        "relationship": "canonical_scope_spend",
+        "scope": "direct_ai",
+        "canonical_owner": "ai-cost-lens",
+        "source_channel": "direct_ai_vendor",
+        "cost_basis": "net_cost",
+        "inclusion_rules": [
+          "Include direct_ai charges from the declared billing channel."
+        ],
+        "exclusion_rules": [
+          "Exclude charges classified to another canonical technology-spend scope."
+        ],
+        "coverage": "complete",
+        "overlap": {
+          "disposition": "resolved",
+          "treatment": "Billing-channel classification is explicit."
+        },
+        "cross_scope_treatments": {
+          "provider_billed_ai": "excluded",
+          "direct_ai_vendor": "included"
+        },
+        "component_treatments": {
+          "credits": "included",
+          "taxes": "excluded",
+          "adjustments": "included",
+          "shared_services": "included"
+        },
+        "allocation_of_metric_id": null,
+        "total_eligible": true,
+        "eligibility_reason": "Eligible after complete boundary validation."
+      }
+    },
+    {
+      "id": "metric.tech-spend.scope.saas",
+      "name": "Canonical saas scope spend",
+      "value": 300.0,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "observed",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": null,
+      "input_metric_ids": [],
+      "evidence_ids": [
+        "evidence.saas.invoice"
+      ],
+      "quality_status": "valid",
+      "accounting_boundary": {
+        "relationship": "canonical_scope_spend",
+        "scope": "saas",
+        "canonical_owner": "saas-cost-analyzer",
+        "source_channel": "saas_invoice_or_entitlement",
+        "cost_basis": "net_cost",
+        "inclusion_rules": [
+          "Include saas charges from the declared billing channel."
+        ],
+        "exclusion_rules": [
+          "Exclude charges classified to another canonical technology-spend scope."
+        ],
+        "coverage": "complete",
+        "overlap": {
+          "disposition": "resolved",
+          "treatment": "Billing-channel classification is explicit."
+        },
+        "cross_scope_treatments": {
+          "provider_billed_ai": "not_applicable",
+          "direct_ai_vendor": "excluded"
+        },
+        "component_treatments": {
+          "credits": "included",
+          "taxes": "excluded",
+          "adjustments": "included",
+          "shared_services": "included"
+        },
+        "allocation_of_metric_id": null,
+        "total_eligible": true,
+        "eligibility_reason": "Eligible after complete boundary validation."
+      }
+    },
+    {
+      "id": "metric.tech-spend.total",
+      "name": "All-in technology spend",
+      "value": 1500.0,
+      "unknown_reason": null,
+      "unit": "currency",
+      "currency": "USD",
+      "basis": "calculated",
+      "additivity": "additive",
+      "period": {
+        "start": "2026-07-01",
+        "end": "2026-08-01",
+        "timezone": "UTC"
+      },
+      "dimensions": {},
+      "formula": "cloud + direct_ai + saas",
+      "input_metric_ids": [
+        "metric.tech-spend.scope.cloud",
+        "metric.tech-spend.scope.direct_ai",
+        "metric.tech-spend.scope.saas"
+      ],
+      "evidence_ids": [
+        "evidence.cloud.invoice",
+        "evidence.direct_ai.invoice",
+        "evidence.saas.invoice"
+      ],
+      "quality_status": "valid",
+      "metric_role": "technology_spend_total"
+    }
+  ],
+  "finding_catalog": [],
+  "opportunity_catalog": [],
+  "opportunity_aggregates": [],
+  "display": {
+    "headline_metric_ids": [
+      "metric.tech-spend.total"
+    ],
+    "section_metric_ids": {
+      "technology-spend": [
+        "metric.tech-spend.scope.cloud",
+        "metric.tech-spend.scope.direct_ai",
+        "metric.tech-spend.scope.saas"
+      ]
+    },
+    "finding_ids": [],
+    "opportunity_aggregate_ids": [],
+    "disclosures": [
+      "Illustrative data; canonical scope amounts reconcile without billing-channel overlap."
+    ]
+  },
+  "reconciliation": [
+    {
+      "id": "reconciliation.tech-spend",
+      "assertion": "Canonical scopes sum to technology spend.",
+      "input_metric_ids": [
+        "metric.tech-spend.scope.cloud",
+        "metric.tech-spend.scope.direct_ai",
+        "metric.tech-spend.scope.saas"
+      ],
+      "output_metric_id": "metric.tech-spend.total",
+      "difference": 0.0,
+      "tolerance": 0.01,
+      "status": "passed"
+    }
+  ],
+  "provenance": {
+    "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "artifact_sha256s": {
+      "finops-lite": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "finops-watchdog": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "recovery-economics": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "ai-cost-lens": "1111111111111111111111111111111111111111111111111111111111111111",
+      "saas-cost-analyzer": "2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  },
+  "technology_spend_reconciliation": {
+    "input_metric_ids": [
+      "metric.tech-spend.scope.cloud",
+      "metric.tech-spend.scope.direct_ai",
+      "metric.tech-spend.scope.saas"
+    ],
+    "output_metric_id": "metric.tech-spend.total",
+    "difference": 0.0,
+    "tolerance": 0.01,
+    "status": "passed"
+  }
+}

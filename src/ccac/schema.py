@@ -18,21 +18,23 @@ SCHEMA_BY_DOCUMENT_TYPE = {
     "trusted_report": "trusted-report.schema.json",
     "verified_outcome": "verified-outcome.schema.json",
 }
+SUPPORTED_CONTRACTS = {"ccac/1.0.0", "ccac/1.1.0"}
 
 
-@lru_cache(maxsize=1)
-def _schemas() -> dict[str, dict[str, Any]]:
+@lru_cache(maxsize=2)
+def _schemas(contract: str) -> dict[str, dict[str, Any]]:
     packaged_root = files("ccac.schemas")
     development_root = Path(__file__).resolve().parents[2] / "schemas"
-    schema_root = development_root if development_root.is_dir() else packaged_root
+    base_root = development_root if development_root.is_dir() else packaged_root
+    schema_root = base_root if contract == "ccac/1.0.0" else base_root.joinpath("1.1.0")
     names = ["common.schema.json", *SCHEMA_BY_DOCUMENT_TYPE.values()]
     loaded = {name: json.loads(schema_root.joinpath(name).read_text(encoding="utf-8")) for name in names}
     return loaded
 
 
 @lru_cache(maxsize=None)
-def _validator(document_type: str) -> Draft202012Validator:
-    schemas = _schemas()
+def _validator(contract: str, document_type: str) -> Draft202012Validator:
+    schemas = _schemas(contract)
     schema = schemas[SCHEMA_BY_DOCUMENT_TYPE[document_type]]
     registry = Registry().with_resources(
         (candidate["$id"], Resource.from_contents(candidate)) for candidate in schemas.values()
@@ -41,11 +43,23 @@ def _validator(document_type: str) -> Draft202012Validator:
 
 
 def validate_structure(document: dict[str, Any]) -> list[ValidationIssue]:
+    contract = document.get("contract")
+    if contract is None:
+        contract = "ccac/1.0.0"
+    if contract not in SUPPORTED_CONTRACTS:
+        return [ValidationIssue(ErrorCode.UNSUPPORTED_CONTRACT, f"Unsupported contract: {contract!r}", "$.contract")]
     document_type = document.get("document_type")
     if document_type not in SCHEMA_BY_DOCUMENT_TYPE:
         return [ValidationIssue(ErrorCode.UNKNOWN_DOCUMENT_TYPE, f"Unsupported document_type: {document_type!r}", "$.document_type")]
     issues = []
-    for error in sorted(_validator(document_type).iter_errors(document), key=lambda item: list(item.absolute_path)):
+    for error in sorted(_validator(contract, document_type).iter_errors(document), key=lambda item: list(item.absolute_path)):
         path = "$" + "".join(f"[{part}]" if isinstance(part, int) else f".{part}" for part in error.absolute_path)
-        issues.append(ValidationIssue(ErrorCode.SCHEMA_INVALID, error.message, path))
+        code = ErrorCode.SCHEMA_INVALID
+        if contract == "ccac/1.1.0" and error.validator == "required" and "accounting_boundary" in path:
+            missing = set(error.validator_value) - set(error.instance)
+            if missing & {"inclusion_rules", "exclusion_rules", "component_treatments"}:
+                code = ErrorCode.ACCOUNTING_BOUNDARY_DECLARATION_MISSING
+        if contract == "ccac/1.1.0" and error.validator == "minItems" and path.endswith(".evidence_ids"):
+            code = ErrorCode.ACCOUNTING_BOUNDARY_EVIDENCE_MISSING
+        issues.append(ValidationIssue(code, error.message, path))
     return issues
