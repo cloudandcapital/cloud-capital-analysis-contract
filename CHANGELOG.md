@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 — unreleased
+## 0.2.0 — 2026-08-08
 
 - Add explicit dispatch for preserved `ccac/1.0.0` and new `ccac/1.1.0` artifacts.
 - Add typed Cloud, direct-AI, and SaaS boundaries and fail-closed technology-spend reconciliation.
