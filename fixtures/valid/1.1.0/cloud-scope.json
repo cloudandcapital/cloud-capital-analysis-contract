@@ -58,6 +58,7 @@
         "canonical_owner": "finops-lite",
         "source_channel": "cloud_provider_billing",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include cloud charges from the declared billing channel."
         ],

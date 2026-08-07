@@ -59,7 +59,7 @@ def test_duplicate_canonical_scope_fails():
 def test_missing_scope_in_claimed_total_fails():
     document = load("technology-spend-report.json")
     ids = ["metric.tech-spend.scope.cloud", "metric.tech-spend.scope.direct_ai", "metric.tech-spend.total"]
-    document["technology_spend_reconciliation"]["input_metric_ids"] = ids
+    document["reconciliation"][0]["input_metric_ids"] = ids
     document["metric_catalog"][-1]["input_metric_ids"] = ids
     assert ErrorCode.CANONICAL_SCOPE_MISSING in codes(document)
 
@@ -135,3 +135,133 @@ def test_total_requires_complete_canonical_input_ids():
     document = load("technology-spend-report.json")
     document["metric_catalog"][-1]["input_metric_ids"] = []
     assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_advertised_total_requires_exactly_one_typed_reconciliation():
+    document = load("technology-spend-report.json")
+    del document["reconciliation"][0]["reconciliation_type"]
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_duplicate_typed_reconciliation_fails():
+    document = load("technology-spend-report.json")
+    duplicate = deepcopy(document["reconciliation"][0])
+    duplicate["id"] = "reconciliation.tech-spend.duplicate"
+    document["reconciliation"].append(duplicate)
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("metric_role", None),
+        ("unit", "requests"),
+        ("currency", "EUR"),
+        ("period", {"start": "2026-06-01", "end": "2026-07-01", "timezone": "UTC"}),
+        ("additivity", "non_additive"),
+        ("basis", "observed"),
+        ("quality_status", "partial"),
+        ("value", None),
+        ("input_metric_ids", []),
+        ("formula", None),
+    ],
+)
+def test_output_total_contract_is_fully_enforced(field, value):
+    document = load("technology-spend-report.json")
+    output = document["metric_catalog"][-1]
+    if value is None:
+        output.pop(field)
+    else:
+        output[field] = value
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_output_total_requires_evidence():
+    document = load("technology-spend-report.json")
+    document["metric_catalog"][-1]["evidence_ids"] = []
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_output_total_cannot_carry_accounting_boundary():
+    document = load("technology-spend-report.json")
+    document["metric_catalog"][-1]["accounting_boundary"] = deepcopy(document["metric_catalog"][0]["accounting_boundary"])
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_canonical_scope_cannot_also_be_total():
+    document = load("technology-spend-report.json")
+    document["metric_catalog"][0]["metric_role"] = "technology_spend_total"
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_tool_result_cannot_publish_total_role():
+    document = load("cloud-scope.json")
+    document["metrics"][0]["metric_role"] = "technology_spend_total"
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_typed_reconciliation_requires_total_output():
+    document = load("technology-spend-report.json")
+    del document["metric_catalog"][-1]["metric_role"]
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_tool_scope_period_must_match_document_period():
+    document = load("cloud-scope.json")
+    document["metrics"][0]["period"]["start"] = "2026-06-01"
+    assert ErrorCode.CANONICAL_SCOPE_MISMATCH in codes(document)
+
+
+def test_input_period_must_match_report_period():
+    document = load("technology-spend-report.json")
+    for metric in document["metric_catalog"][:3]:
+        metric["period"]["start"] = "2026-06-01"
+    assert ErrorCode.CANONICAL_SCOPE_MISMATCH in codes(document)
+
+
+def test_output_period_must_match_report_period():
+    document = load("technology-spend-report.json")
+    document["metric_catalog"][-1]["period"]["start"] = "2026-06-01"
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_omitted_timezone_normalizes_to_utc():
+    document = load("technology-spend-report.json")
+    for metric in document["metric_catalog"]:
+        metric["period"].pop("timezone")
+    document["period"].pop("timezone")
+    assert validate_document(document) == []
+
+
+def test_mismatched_minor_units_fail():
+    document = load("technology-spend-report.json")
+    document["metric_catalog"][1]["accounting_boundary"]["currency_minor_unit"] = 1
+    assert ErrorCode.CANONICAL_SCOPE_MISMATCH in codes(document)
+
+
+def test_tolerance_cannot_exceed_currency_minor_unit():
+    document = load("technology-spend-report.json")
+    document["reconciliation"][0]["tolerance"] = 0.02
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID in codes(document)
+
+
+def test_decimal_reconciliation_avoids_binary_float_error():
+    document = load("technology-spend-report.json")
+    for metric, value in zip(document["metric_catalog"][:3], [0.1, 0.2, 0.3]):
+        metric["value"] = value
+    document["metric_catalog"][-1]["value"] = 0.6
+    document["reconciliation"][0]["difference"] = 0
+    assert validate_document(document) == []
+
+
+def test_partial_report_may_display_individual_scope_truthfully():
+    document = load("technology-spend-report.json")
+    document["status"] = "partial"
+    document["omitted_producers"] = [{"name": "finops-watchdog", "reason": "Not supplied."}]
+    document["metric_catalog"][0]["accounting_boundary"]["coverage"] = "partial"
+    document["metric_catalog"][0]["accounting_boundary"]["total_eligible"] = False
+    document["metric_catalog"][0]["accounting_boundary"]["eligibility_reason"] = "Partial source coverage."
+    del document["metric_catalog"][-1]["metric_role"]
+    del document["reconciliation"][0]["reconciliation_type"]
+    document["display"]["headline_metric_ids"] = ["metric.tech-spend.scope.cloud"]
+    assert ErrorCode.TECHNOLOGY_SPEND_RECONCILIATION_INVALID not in codes(document)

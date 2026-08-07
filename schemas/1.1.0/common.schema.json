@@ -83,6 +83,7 @@
         "canonical_owner": {"enum": ["finops-lite", "ai-cost-lens", "saas-cost-analyzer"]},
         "source_channel": {"enum": ["cloud_provider_billing", "direct_ai_vendor", "saas_invoice_or_entitlement"]},
         "cost_basis": {"enum": ["billed_cost", "effective_cost", "amortized_cost", "net_cost"]},
+        "currency_minor_unit": {"type": "number", "exclusiveMinimum": 0},
         "inclusion_rules": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
         "exclusion_rules": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
         "coverage": {"enum": ["complete", "partial", "unknown"]},
@@ -121,7 +122,8 @@
       },
       "allOf": [
         {"if": {"properties": {"relationship": {"const": "allocation"}}}, "then": {"required": ["allocation_of_metric_id"], "properties": {"allocation_of_metric_id": {"$ref": "#/$defs/id"}, "total_eligible": {"const": false}}}},
-        {"if": {"properties": {"relationship": {"const": "canonical_scope_spend"}}}, "then": {"properties": {"allocation_of_metric_id": {"type": "null"}}}}
+        {"if": {"properties": {"relationship": {"const": "canonical_scope_spend"}}}, "then": {"properties": {"allocation_of_metric_id": {"type": "null"}}}},
+        {"if": {"properties": {"total_eligible": {"const": true}}}, "then": {"required": ["currency_minor_unit"]}}
       ]
     },
     "evidence": {

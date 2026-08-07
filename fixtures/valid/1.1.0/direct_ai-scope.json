@@ -58,6 +58,7 @@
         "canonical_owner": "ai-cost-lens",
         "source_channel": "direct_ai_vendor",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include direct_ai charges from the declared billing channel."
         ],

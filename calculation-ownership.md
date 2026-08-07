@@ -8,7 +8,7 @@
 | Direct AI | AI Cost Lens | Direct AI-vendor usage or invoices | Provider-billed native AI |
 | SaaS | SaaS Cost Analyzer | SaaS invoices or entitlements | Vendors classified as direct AI |
 
-Tech Spend Command Center may reconcile and publish the combined total but may not originate or reinterpret the three amounts. FinOps Watchdog and Recovery Economics may not originate canonical scope totals. Kubernetes is an allocation of Cloud and remains non-additive at this boundary.
+Tech Spend Command Center may reconcile and publish the combined total but may not originate or reinterpret the three amounts. Run-directory validation proves this by matching each reported scope to exactly one owner-produced metric across its complete financial representation. FinOps Watchdog and Recovery Economics may not originate canonical scope totals. Kubernetes is an allocation of Cloud and remains non-additive at this boundary.
 
 ## Ownership rule
 

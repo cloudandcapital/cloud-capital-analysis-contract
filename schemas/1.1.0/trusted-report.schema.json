@@ -85,25 +85,17 @@
         "required": ["id", "assertion", "input_metric_ids", "output_metric_id", "difference", "tolerance", "status"],
         "properties": {
           "id": {"$ref": "common.schema.json#/$defs/id"},
+          "reconciliation_type": {"const": "technology_spend_total"},
           "assertion": {"type": "string", "minLength": 1},
           "input_metric_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/id"}, "minItems": 1, "uniqueItems": true},
           "output_metric_id": {"$ref": "common.schema.json#/$defs/id"},
           "difference": {"type": "number"},
           "tolerance": {"type": "number", "minimum": 0},
           "status": {"enum": ["passed", "failed"]}
-        }
-      }
-    },
-    "technology_spend_reconciliation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["input_metric_ids", "output_metric_id", "difference", "tolerance", "status"],
-      "properties": {
-        "input_metric_ids": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/id"}, "minItems": 3, "maxItems": 3, "uniqueItems": true},
-        "output_metric_id": {"$ref": "common.schema.json#/$defs/id"},
-        "difference": {"type": "number"},
-        "tolerance": {"type": "number", "minimum": 0, "description": "Tolerance denominated in the input currency and bounded by its currency-minor-unit convention."},
-        "status": {"enum": ["passed", "failed"]}
+        },
+        "allOf": [
+          {"if": {"required": ["reconciliation_type"]}, "then": {"properties": {"input_metric_ids": {"minItems": 3, "maxItems": 3}}}}
+        ]
       }
     },
     "provenance": {

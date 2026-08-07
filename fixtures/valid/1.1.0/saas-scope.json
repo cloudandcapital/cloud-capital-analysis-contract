@@ -58,6 +58,7 @@
         "canonical_owner": "saas-cost-analyzer",
         "source_channel": "saas_invoice_or_entitlement",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include saas charges from the declared billing channel."
         ],

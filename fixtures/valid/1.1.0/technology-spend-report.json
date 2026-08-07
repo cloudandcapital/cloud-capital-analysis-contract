@@ -118,6 +118,7 @@
         "canonical_owner": "finops-lite",
         "source_channel": "cloud_provider_billing",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include cloud charges from the declared billing channel."
         ],
@@ -171,6 +172,7 @@
         "canonical_owner": "ai-cost-lens",
         "source_channel": "direct_ai_vendor",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include direct_ai charges from the declared billing channel."
         ],
@@ -224,6 +226,7 @@
         "canonical_owner": "saas-cost-analyzer",
         "source_channel": "saas_invoice_or_entitlement",
         "cost_basis": "net_cost",
+        "currency_minor_unit": 0.01,
         "inclusion_rules": [
           "Include saas charges from the declared billing channel."
         ],
@@ -303,6 +306,7 @@
   "reconciliation": [
     {
       "id": "reconciliation.tech-spend",
+      "reconciliation_type": "technology_spend_total",
       "assertion": "Canonical scopes sum to technology spend.",
       "input_metric_ids": [
         "metric.tech-spend.scope.cloud",
@@ -324,16 +328,5 @@
       "ai-cost-lens": "1111111111111111111111111111111111111111111111111111111111111111",
       "saas-cost-analyzer": "2222222222222222222222222222222222222222222222222222222222222222"
     }
-  },
-  "technology_spend_reconciliation": {
-    "input_metric_ids": [
-      "metric.tech-spend.scope.cloud",
-      "metric.tech-spend.scope.direct_ai",
-      "metric.tech-spend.scope.saas"
-    ],
-    "output_metric_id": "metric.tech-spend.total",
-    "difference": 0.0,
-    "tolerance": 0.01,
-    "status": "passed"
   }
 }

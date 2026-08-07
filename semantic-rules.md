@@ -8,9 +8,12 @@
 4. Credits, taxes, adjustments, and shared services require explicit treatment.
 5. Allocations and components are not additional scope spend. Kubernetes is a Cloud allocation.
 6. Total eligibility requires a non-null additive currency value, observed or calculated basis, complete coverage, valid quality, evidence, and resolved overlap.
-7. A total references exactly one eligible metric per scope with identical boundary signatures and reconciles within tolerance.
+7. A total references exactly one eligible metric per scope with identical boundary signatures and reconciles using `Decimal` within a tolerance no larger than their common declared currency minor unit.
 8. Partial reports may display individual scopes but cannot advertise an all-in total.
 9. Unknown compatibility fails closed; automatic FX conversion and inference from labels are forbidden.
+10. The existing reconciliation array is the sole source of truth; an advertised total requires exactly one `technology_spend_total` reconciliation entry.
+11. Periods are start-inclusive/end-exclusive, omitted timezones normalize to UTC, and producer metrics, report inputs, report output, and containing documents must align.
+12. Run validation requires every reported canonical scope metric to be byte-semantically identical on financial fields to exactly one metric in its canonical producer artifact.
 
 JSON Schema validates shape. The conformance library must also enforce reference integrity and financial semantics.
 

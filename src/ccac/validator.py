@@ -10,6 +10,12 @@ from .schema import validate_structure
 from .semantic import validate_semantics
 
 
+CANONICAL_SCOPE_FIELDS = (
+    "id", "value", "unit", "currency", "basis", "additivity", "period", "formula",
+    "input_metric_ids", "evidence_ids", "quality_status", "accounting_boundary",
+)
+
+
 def load_json(path: Path) -> tuple[dict[str, Any] | None, list[ValidationIssue]]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -54,6 +60,8 @@ def validate_run_directory(run_directory: Path) -> list[ValidationIssue]:
 
     run_id = manifest["run_id"]
     mode = manifest["mode"]
+    contract = manifest["contract"]
+    produced_documents: list[dict[str, Any]] = []
     for index, artifact in enumerate(manifest.get("artifacts", [])):
         if artifact.get("status") != "produced":
             continue
@@ -71,10 +79,37 @@ def validate_run_directory(run_directory: Path) -> list[ValidationIssue]:
         issues.extend(load_issues)
         if document is None:
             continue
+        produced_documents.append(document)
         issues.extend(validate_document(document))
+        if document.get("contract") != contract:
+            issues.append(ValidationIssue(ErrorCode.CONTRACT_MISMATCH, f"Artifact contract differs from manifest: {relative_path}", f"{path}.contract"))
         if document.get("run_id") != run_id:
             issues.append(ValidationIssue(ErrorCode.RUN_ID_MISMATCH, f"Artifact run_id differs from manifest: {relative_path}", f"{path}.run_id"))
         if document.get("mode") != mode:
             issues.append(ValidationIssue(ErrorCode.MODE_MISMATCH, f"Artifact mode differs from manifest: {relative_path}", f"{path}.mode"))
+    if contract == "ccac/1.1.0":
+        reports = [document for document in produced_documents if document.get("document_type") == "trusted_report"]
+        tool_results = [document for document in produced_documents if document.get("document_type") == "tool_result"]
+        for report in reports:
+            for index, metric in enumerate(report.get("metric_catalog", [])):
+                boundary = metric.get("accounting_boundary")
+                if not isinstance(boundary, dict) or boundary.get("relationship") != "canonical_scope_spend":
+                    continue
+                owner = boundary.get("canonical_owner")
+                matches = [
+                    source_metric
+                    for result in tool_results
+                    if result.get("producer", {}).get("name") == owner
+                    for source_metric in result.get("metrics", [])
+                    if source_metric.get("id") == metric.get("id")
+                ]
+                path = f"$.metric_catalog[{index}]"
+                if not matches:
+                    issues.append(ValidationIssue(ErrorCode.CANONICAL_SCOPE_SOURCE_MISSING, f"Canonical scope metric must have exactly one source in owner {owner!r}", path))
+                    continue
+                if len(matches) > 1:
+                    issues.append(ValidationIssue(ErrorCode.CANONICAL_SCOPE_SOURCE_MISMATCH, f"Canonical scope metric has multiple sources in owner {owner!r}", path))
+                    continue
+                if any(matches[0].get(field) != metric.get(field) for field in CANONICAL_SCOPE_FIELDS):
+                    issues.append(ValidationIssue(ErrorCode.CANONICAL_SCOPE_SOURCE_MISMATCH, "Trusted-report canonical scope differs from its producer-owned source", path))
     return issues
-
