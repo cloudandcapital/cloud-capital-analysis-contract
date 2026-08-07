@@ -14,6 +14,9 @@
 10. The existing reconciliation array is the sole source of truth; an advertised total requires exactly one `technology_spend_total` reconciliation entry.
 11. Periods are start-inclusive/end-exclusive, omitted timezones normalize to UTC, and producer metrics, report inputs, report output, and containing documents must align.
 12. Run validation requires every reported canonical scope metric to be byte-semantically identical on financial fields to exactly one metric in its canonical producer artifact.
+13. Manifest producer/version/type labels and `contract_valid` state must agree with each hash-verified artifact document; labels are never trusted over contents.
+14. Report included and quality inventories must exactly match valid produced analytical artifacts by name and version, with truthful, disjoint omissions.
+15. A complete report requires a complete manifest, all five valid analytical results, one valid Command Center report, no omitted or failed required producer, and passing reconciliations.
 
 JSON Schema validates shape. The conformance library must also enforce reference integrity and financial semantics.
 

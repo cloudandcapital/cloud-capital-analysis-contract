@@ -18,7 +18,7 @@ An all-in total requires exactly one eligible metric per scope, identical period
 
 Periods are start-inclusive and end-exclusive. Omitted timezones normalize to the schema default, UTC. A scope metric must match its producer result period; reconciled inputs and output must also match the trusted-report period.
 
-Standalone report validation proves the declarations and arithmetic. Complete producer provenance is established only by run-directory validation, which requires each reported canonical scope metric to match exactly one metric from its declared owner's tool-result artifact on every financially meaningful field.
+Standalone report validation proves the declarations and arithmetic. Complete producer provenance is established only by run-directory validation, which requires each reported canonical scope metric to match exactly one metric from its declared owner's tool-result artifact on every financially meaningful field. Run validation also derives producer inventory only from hash-verified, contract-valid artifacts; reconciles manifest labels, included/omitted producers, quality summaries, and versions; and permits a complete report only in a genuinely complete six-artifact run.
 
 This capability enables a future scope breakdown and donut. It does not connect Cloud Cost Guard and is not a claim of GAAP compliance, audited accounting, official FOCUS conformance, or complete enterprise billing coverage.
 
