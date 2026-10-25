@@ -13,7 +13,7 @@ authors = [{name = "Cloud & Capital"}]
 dependencies = ["jsonschema>=4.23,<5", "referencing>=0.28"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0,<9"]
+dev = ["pytest>=9.0.3,<10"]
 
 [project.scripts]
 ccac = "ccac.cli:main"
